@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Untitled</title>
+  
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Página Romántica</title>
+  <style>
+    /* Estilos generales */
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100%;
+    }
+
+    /* Fondo de acuarela rosa */
+    #fondo-acuarela {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('https://media.istockphoto.com/id/1393912497/es/vector/fondo-de-salpicaduras-de-acuarela-rosa-con-rosa-de-arte-de-l%C3%ADnea.jpg?s=612x612&w=0&k=20&c=laUPByTcXj51sNpREDvu_MYNAOojB7GoTMcC0_Ud9wU=');
+      background-size: cover;
+      background-position: center;
+      z-index: -2; /* Asegura que esté detrás del canvas */
+    }
+
+    /* Canvas para los fuegos artificiales */
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1; /* Los fuegos artificiales están sobre el fondo, pero debajo del contenido */
+    }
+
+    /* Contenedor principal */
+    #pagina-inicial {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: white;
+      z-index: 1; /* El contenido está sobre todo */
+    }
+
+    #pagina-inicial h1 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    #pagina-inicial img {
+      width: 200px;
+      margin-bottom: 20px;
+    }
+
+    #pagina-inicial button {
+      background-color: #ffe6e6;
+      border: 2px solid black;
+      color: black;
+      font-size: 1.2rem;
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    #pagina-inicial button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Página con fuegos artificiales */
+    #pagina-fuegos {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: white;
+      z-index: 1;
+    }
+
+    #pagina-fuegos h1 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    #pagina-fuegos img {
+      width: 200px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Fondo de acuarela rosa -->
+  <div id="fondo-acuarela"></div>
+
+  <!-- Canvas para los fuegos artificiales -->
+  <canvas id="fireworksCanvas"></canvas>
+
+  <!-- Página inicial -->
+  <div id="pagina-inicial">
+    <h1>La vida es más bonita cuando sonríes...</h1>
+    <img src="https://i.pinimg.com/originals/a0/ba/95/a0ba951828efe9613d64db6e5b4f33e7.gif" alt="Sticker corazón">
+    <button onclick="mostrarFuegos()">No aplastes</button>
+  </div>
+
+  <!-- Página con fuegos artificiales -->
+  <div id="pagina-fuegos">
+    <canvas id="heartsCanvas"></canvas>
+    <h1>Te dije que no aplastaras... ¡Ahora me debes un besito!</h1>
+    <img src="https://i.pinimg.com/originals/fd/35/30/fd3530b992c00cc1556a794a306cef45.gif" alt="Sticker amoroso">
+  </div>
+
+  <script>
+    // Fuegos artificiales en la página inicial
+    const fireworksCanvas = document.getElementById('fireworksCanvas');
+    const fireworksCtx = fireworksCanvas.getContext('2d');
+    fireworksCanvas.width = window.innerWidth;
+    fireworksCanvas.height = window.innerHeight;
+
+    const fireworks = [];
+    const particles = [];
+
+    class Firework {
+      constructor() {
+        this.x = Math.random() * fireworksCanvas.width;
+        this.y = fireworksCanvas.height;
+        this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        this.velocity = {
+          x: (Math.random() - 0.5) * 2,
+          y: -(Math.random() * 3 + 4)
+        };
+        this.alpha = 1;
+      }
+
+      update() {
+        this.x += this.velocity.x;
+        this.y += this.velocity.y;
+        this.alpha -= 0.01;
+        if (this.alpha <= 0) {
+          this.explode();
+          fireworks.splice(fireworks.indexOf(this), 1);
+        }
+      }
+
+      explode() {
+        for (let i = 0; i < 100; i++) {
+          const particle = new Particle(this.x, this.y, this.color);
+          particles.push(particle);
+        }
+      }
+
+      draw() {
+        fireworksCtx.globalAlpha = this.alpha;
+        fireworksCtx.beginPath();
+        fireworksCtx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+        fireworksCtx.fillStyle = this.color;
+        fireworksCtx.fill();
+        fireworksCtx.closePath();
+        fireworksCtx.globalAlpha = 1;
+      }
+    }
+
+    class Particle {
+      constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.velocity = {
+          x: (Math.random() - 0.5) * 5,
+          y: (Math.random() - 0.5) * 5
+        };
+        this.alpha = 1;
+      }
+
+      update() {
+        this.x += this.velocity.x;
+        this.y += this.velocity.y;
+        this.alpha -= 0.01;
+      }
+
+      draw() {
+        fireworksCtx.globalAlpha = this.alpha;
+        fireworksCtx.beginPath();
+        fireworksCtx.arc(this.x, this.y, 1, 0, Math.PI * 2);
+        fireworksCtx.fillStyle = this.color;
+        fireworksCtx.fill();
+        fireworksCtx.closePath();
+        fireworksCtx.globalAlpha = 1;
+      }
+    }
+
+    function animateFireworks() {
+      fireworksCtx.clearRect(0, 0, fireworksCanvas.width, fireworksCanvas.height);
+
+      fireworks.forEach((firework, index) => {
+        firework.update();
+        firework.draw();
+      });
+
+      particles.forEach((particle, index) => {
+        particle.update();
+        particle.draw();
+        if (particle.alpha <= 0) {
+          particles.splice(index, 1);
+        }
+      });
+
+      requestAnimationFrame(animateFireworks);
+    }
+
+    function launchFirework() {
+      const firework = new Firework();
+      fireworks.push(firework);
+    }
+
+    setInterval(launchFirework, 1000);
+    animateFireworks();
+
+    // Función para mostrar la página con fuegos artificiales
+    function mostrarFuegos() {
+      document.getElementById('pagina-inicial').style.display = 'none';
+      document.getElementById('pagina-fuegos').style.display = 'flex';
+
+      // Iniciar animación de corazones
+      iniciarCorazones();
+    }
+
+    // Animación de corazones en la segunda página
+    const heartsCanvas = document.getElementById('heartsCanvas');
+    const heartsCtx = heartsCanvas.getContext('2d');
+    heartsCanvas.width = window.innerWidth;
+    heartsCanvas.height = window.innerHeight;
+
+    const hearts = [];
+
+    class Heart {
+      constructor() {
+        this.x = Math.random() * heartsCanvas.width;
+        this.y = heartsCanvas.height;
+        this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        this.velocity = {
+          x: (Math.random() - 0.5) * 2,
+          y: -(Math.random() * 3 + 4)
+        };
+        this.alpha = 1;
+        this.size = Math.random() * 20 + 10;
+      }
+
+      update() {
+        this.x += this.velocity.x;
+        this.y += this.velocity.y;
+        this.alpha -= 0.005;
+        if (this.alpha <= 0) {
+          hearts.splice(hearts.indexOf(this), 1);
+        }
+      }
+
+      draw() {
+        heartsCtx.globalAlpha = this.alpha;
+        heartsCtx.font = `${this.size}px Arial`;
+        heartsCtx.fillStyle = this.color;
+        heartsCtx.fillText('❤', this.x, this.y);
+        heartsCtx.globalAlpha = 1;
+      }
+    }
+
+    function animateHearts() {
+      heartsCtx.clearRect(0, 0, heartsCanvas.width, heartsCanvas.height);
+
+      hearts.forEach((heart, index) => {
+        heart.update();
+        heart.draw();
+      });
+
+      requestAnimationFrame(animateHearts);
+    }
+
+    function launchHeart() {
+      const heart = new Heart();
+      hearts.push(heart);
+    }
+
+    function iniciarCorazones() {
+      setInterval(launchHeart, 300);
+      animateHearts();
+    }
+  </script>
+</body>
+</html>
+<!-- partial -->
+  
+</body>
+</html>
